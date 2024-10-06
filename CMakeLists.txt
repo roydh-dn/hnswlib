@@ -6,6 +6,8 @@ project(hnswlib
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
 
+include_directories(third_party/argparse)
+
 add_library(hnswlib INTERFACE)
 add_library(hnswlib::hnswlib ALIAS hnswlib)
 
@@ -32,7 +34,7 @@ else()
     option(HNSWLIB_EXAMPLES "Build examples and tests." OFF)
 endif()
 if(HNSWLIB_EXAMPLES)
-    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 17)
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       SET( CMAKE_CXX_FLAGS  "-Ofast -std=c++11 -DHAVE_CXX0X -openmp -fpic -ftree-vectorize" )
@@ -100,6 +102,6 @@ if(HNSWLIB_EXAMPLES)
     add_executable(multiThread_replace_test tests/cpp/multiThread_replace_test.cpp)
     target_link_libraries(multiThread_replace_test hnswlib)
 
-    add_executable(main tests/cpp/main.cpp tests/cpp/sift_1b.cpp)
+    add_executable(main tests/cpp/main.cpp tests/cpp/sift_1b.cpp tests/cpp/sift_1b_fp.cpp)
     target_link_libraries(main hnswlib)
 endif()
