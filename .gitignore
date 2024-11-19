@@ -13,3 +13,4 @@ var/
 *.pyc
 downloads/
 bigann/
+docs/

@@ -105,3 +105,7 @@ if(HNSWLIB_EXAMPLES)
     add_executable(main tests/cpp/main.cpp tests/cpp/sift_1b.cpp tests/cpp/sift_1b_fp.cpp)
     target_link_libraries(main hnswlib)
 endif()
+
+if (DEBUG)
+SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=thread")
+endif()
