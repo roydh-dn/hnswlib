@@ -331,6 +331,27 @@ To run test **with** updates (from `build` directory)
 ./test_updates update
 ```
 
+### DEBUG Build
+```bash
+cmake -S . -B build -DDEBUG=ON
+cd build
+make -j
+```
+
+To run Thread Sanitizer
+```bash
+cmake -S . -B build -DDEBUG=ON -DTSAN=ON
+cd build
+make -j
+```
+
+To run Address Sanitizer
+```bash
+cmake -S . -B build -DDEBUG=ON -DASAN=ON
+cd build
+make -j
+```
+
 ### HNSW example demos
 
 - Visual search engine for 1M amazon products (MXNet + HNSW): [website](https://thomasdelteil.github.io/VisualSearch_MXNet/), [code](https://github.com/ThomasDelteil/VisualSearch_MXNet), demo by [@ThomasDelteil](https://github.com/ThomasDelteil)
