@@ -3,12 +3,13 @@
 //  >>>    searchKnnCloserFirst(const void* query_data, size_t k) const;
 // of class AlgorithmInterface
 
-#include "../../hnswlib/hnswlib.h"
-
 #include <assert.h>
 
-#include <vector>
 #include <iostream>
+#include <vector>
+
+#include "../../hnswlib/hnswlib.h"
+#include "../../hnswlib/utils.h"
 
 namespace {
 
@@ -20,7 +21,7 @@ void test() {
     idx_t nq = 10;
     size_t k = 10;
 
-    std::vector<float> data(n * d);
+    std::vector<float> data = hnswlib::SpecialVectorGenerator::generate(n, d, 47);
     std::vector<float> query(nq * d);
 
     std::mt19937 rng;
@@ -35,7 +36,7 @@ void test() {
     }
 
     hnswlib::L2Space space(d);
-    hnswlib::AlgorithmInterface<float>* alg_brute  = new hnswlib::BruteforceSearch<float>(&space, 2 * n);
+    hnswlib::AlgorithmInterface<float>* alg_brute = new hnswlib::BruteforceSearch<float>(&space, 2 * n);
     hnswlib::AlgorithmInterface<float>* alg_hnsw = new hnswlib::HierarchicalNSW<float>(&space, 2 * n);
 
     for (size_t i = 0; i < n; ++i) {
