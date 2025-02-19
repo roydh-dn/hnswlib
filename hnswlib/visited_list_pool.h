@@ -1,14 +1,15 @@
 #pragma once
 
-#include <mutex>
 #include <string.h>
+
 #include <deque>
+#include <mutex>
 
 namespace hnswlib {
 typedef unsigned short int vl_type;
 
 class VisitedList {
- public:
+   public:
     vl_type curV;
     vl_type *mass;
     unsigned int numelements;
@@ -27,7 +28,9 @@ class VisitedList {
         }
     }
 
-    ~VisitedList() { delete[] mass; }
+    ~VisitedList() {
+        delete[] mass;
+    }
 };
 ///////////////////////////////////////////////////////////
 //
@@ -40,7 +43,7 @@ class VisitedListPool {
     std::mutex poolguard;
     int numelements;
 
- public:
+   public:
     VisitedListPool(int initmaxpools, int numelements1) {
         numelements = numelements1;
         for (int i = 0; i < initmaxpools; i++)
@@ -50,7 +53,7 @@ class VisitedListPool {
     VisitedList *getFreeVisitedList() {
         VisitedList *rez;
         {
-            std::unique_lock <std::mutex> lock(poolguard);
+            std::unique_lock<std::mutex> lock(poolguard);
             if (pool.size() > 0) {
                 rez = pool.front();
                 pool.pop_front();
@@ -63,7 +66,7 @@ class VisitedListPool {
     }
 
     void releaseVisitedList(VisitedList *vl) {
-        std::unique_lock <std::mutex> lock(poolguard);
+        std::unique_lock<std::mutex> lock(poolguard);
         pool.push_front(vl);
     }
 

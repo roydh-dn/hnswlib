@@ -1,11 +1,11 @@
-#include "../../hnswlib/hnswlib.h"
 #include <thread>
 
+#include "../../hnswlib/hnswlib.h"
 
 // Multithreaded executor
 // The helper function copied from python_bindings/bindings.cpp (and that itself is copied from nmslib)
 // An alternative is using #pragme omp parallel for or any other C++ threading
-template<class Function>
+template <class Function>
 inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn) {
     if (numThreads <= 0) {
         numThreads = std::thread::hardware_concurrency();
@@ -50,7 +50,7 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn
                 }
             }));
         }
-        for (auto &thread : threads) {
+        for (auto& thread : threads) {
             thread.join();
         }
         if (lastException) {
@@ -59,19 +59,18 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn
     }
 }
 
-
 // Filter that allows labels divisible by divisor
-class PickDivisibleIds: public hnswlib::BaseFilterFunctor {
-unsigned int divisor = 1;
- public:
-    PickDivisibleIds(unsigned int divisor): divisor(divisor) {
+class PickDivisibleIds : public hnswlib::BaseFilterFunctor {
+    unsigned int divisor = 1;
+
+   public:
+    PickDivisibleIds(unsigned int divisor) : divisor(divisor) {
         assert(divisor != 0);
     }
     bool operator()(hnswlib::labeltype label_id) {
         return label_id % divisor == 0;
     }
 };
-
 
 int main() {
     int dim = 16;               // Dimension of the elements
@@ -83,7 +82,8 @@ int main() {
 
     // Initing index
     hnswlib::L2Space space(dim);
-    hnswlib::HierarchicalNSW<float>* alg_hnsw = new hnswlib::HierarchicalNSW<float>(&space, max_elements, M, ef_construction);
+    hnswlib::HierarchicalNSW<float>* alg_hnsw =
+        new hnswlib::HierarchicalNSW<float>(&space, max_elements, M, ef_construction);
 
     // Generate random data
     std::mt19937 rng;
@@ -95,9 +95,8 @@ int main() {
     }
 
     // Add data to index
-    ParallelFor(0, max_elements, num_threads, [&](size_t row, size_t threadId) {
-        alg_hnsw->addPoint((void*)(data + dim * row), row);
-    });
+    ParallelFor(0, max_elements, num_threads,
+                [&](size_t row, size_t threadId) { alg_hnsw->addPoint((void*)(data + dim * row), row); });
 
     // Create filter that allows only even labels
     PickDivisibleIds pickIdsDivisibleByTwo(2);
@@ -106,7 +105,8 @@ int main() {
     int k = 10;
     std::vector<hnswlib::labeltype> neighbors(max_elements * k);
     ParallelFor(0, max_elements, num_threads, [&](size_t row, size_t threadId) {
-        std::priority_queue<std::pair<float, hnswlib::labeltype>> result = alg_hnsw->searchKnn(data + dim * row, k, &pickIdsDivisibleByTwo);
+        std::priority_queue<std::pair<float, hnswlib::labeltype>> result =
+            alg_hnsw->searchKnn(data + dim * row, k, &pickIdsDivisibleByTwo);
         for (int i = 0; i < k; i++) {
             hnswlib::labeltype label = result.top().second;
             result.pop();
@@ -114,8 +114,9 @@ int main() {
         }
     });
 
-    for (hnswlib::labeltype label: neighbors) {
-        if (label % 2 == 1) std::cout << "Error: found odd label\n";
+    for (hnswlib::labeltype label : neighbors) {
+        if (label % 2 == 1)
+            std::cout << "Error: found odd label\n";
     }
 
     delete[] data;

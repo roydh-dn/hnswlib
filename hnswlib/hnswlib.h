@@ -3,9 +3,9 @@
 // https://github.com/nmslib/hnswlib/pull/508
 // This allows others to provide their own error stream (e.g. RcppHNSW)
 #ifndef HNSWLIB_ERR_OVERRIDE
-  #define HNSWERR std::cerr
+#define HNSWERR std::cerr
 #else
-  #define HNSWERR HNSWLIB_ERR_OVERRIDE
+#define HNSWERR HNSWLIB_ERR_OVERRIDE
 #endif
 
 #ifndef NO_MANUAL_VECTORIZATION
@@ -23,6 +23,7 @@
 #if defined(USE_AVX) || defined(USE_SSE)
 #ifdef _MSC_VER
 #include <intrin.h>
+
 #include <stdexcept>
 static void cpuid(int32_t out[4], int32_t eax, int32_t ecx) {
     __cpuidex(out, eax, ecx);
@@ -31,9 +32,9 @@ static __int64 xgetbv(unsigned int x) {
     return _xgetbv(x);
 }
 #else
-#include <x86intrin.h>
 #include <cpuid.h>
 #include <stdint.h>
+#include <x86intrin.h>
 static void cpuid(int32_t cpuInfo[4], int32_t eax, int32_t ecx) {
     __cpuid_count(eax, ecx, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
 }
@@ -57,7 +58,7 @@ static uint64_t xgetbv(unsigned int index) {
 #endif
 
 // Adapted from https://github.com/Mysticial/FeatureDetector
-#define _XCR_XFEATURE_ENABLED_MASK  0
+#define _XCR_XFEATURE_ENABLED_MASK 0
 
 static bool AVXCapable() {
     int cpuInfo[4];
@@ -87,7 +88,8 @@ static bool AVXCapable() {
 }
 
 static bool AVX512Capable() {
-    if (!AVXCapable()) return false;
+    if (!AVXCapable())
+        return false;
 
     int cpuInfo[4];
 
@@ -116,24 +118,27 @@ static bool AVX512Capable() {
 }
 #endif
 
+#include <string.h>
+
+#include <iostream>
 #include <queue>
 #include <vector>
-#include <iostream>
-#include <string.h>
 
 namespace hnswlib {
 typedef size_t labeltype;
 
 // This can be extended to store state for filtering (e.g. from a std::set)
 class BaseFilterFunctor {
- public:
-    virtual bool operator()(hnswlib::labeltype id) { return true; }
-    virtual ~BaseFilterFunctor() {};
+   public:
+    virtual bool operator()(hnswlib::labeltype id) {
+        return true;
+    }
+    virtual ~BaseFilterFunctor(){};
 };
 
-template<typename dist_t>
+template <typename dist_t>
 class BaseSearchStopCondition {
- public:
+   public:
     virtual void add_point_to_result(labeltype label, const void *datapoint, dist_t dist) = 0;
 
     virtual void remove_point_from_result(labeltype label, const void *datapoint, dist_t dist) = 0;
@@ -144,35 +149,36 @@ class BaseSearchStopCondition {
 
     virtual bool should_remove_extra() = 0;
 
-    virtual void filter_results(std::vector<std::pair<dist_t, labeltype >> &candidates) = 0;
+    virtual void filter_results(std::vector<std::pair<dist_t, labeltype>> &candidates) = 0;
 
-    virtual ~BaseSearchStopCondition() {}
+    virtual ~BaseSearchStopCondition() {
+    }
 };
 
 template <typename T>
 class pairGreater {
- public:
-    bool operator()(const T& p1, const T& p2) {
+   public:
+    bool operator()(const T &p1, const T &p2) {
         return p1.first > p2.first;
     }
 };
 
-template<typename T>
+template <typename T>
 static void writeBinaryPOD(std::ostream &out, const T &podRef) {
-    out.write((char *) &podRef, sizeof(T));
+    out.write((char *)&podRef, sizeof(T));
 }
 
-template<typename T>
+template <typename T>
 static void readBinaryPOD(std::istream &in, T &podRef) {
-    in.read((char *) &podRef, sizeof(T));
+    in.read((char *)&podRef, sizeof(T));
 }
 
-template<typename MTYPE>
-using DISTFUNC = MTYPE(*)(const void *, const void *, const void *);
+template <typename MTYPE>
+using DISTFUNC = MTYPE (*)(const void *, const void *, const void *);
 
-template<typename MTYPE>
+template <typename MTYPE>
 class SpaceInterface {
- public:
+   public:
     // virtual void search(void *);
     virtual size_t get_data_size() = 0;
 
@@ -180,30 +186,30 @@ class SpaceInterface {
 
     virtual void *get_dist_func_param() = 0;
 
-    virtual ~SpaceInterface() {}
-};
-
-template<typename dist_t>
-class AlgorithmInterface {
- public:
-    virtual void addPoint(const void *datapoint, labeltype label, bool replace_deleted = false) = 0;
-
-    virtual std::priority_queue<std::pair<dist_t, labeltype>>
-        searchKnn(const void*, size_t, BaseFilterFunctor* isIdAllowed = nullptr) const = 0;
-
-    // Return k nearest neighbor in the order of closer fist
-    virtual std::vector<std::pair<dist_t, labeltype>>
-        searchKnnCloserFirst(const void* query_data, size_t k, BaseFilterFunctor* isIdAllowed = nullptr) const;
-
-    virtual void saveIndex(const std::string &location) = 0;
-    virtual ~AlgorithmInterface(){
+    virtual ~SpaceInterface() {
     }
 };
 
-template<typename dist_t>
-std::vector<std::pair<dist_t, labeltype>>
-AlgorithmInterface<dist_t>::searchKnnCloserFirst(const void* query_data, size_t k,
-                                                 BaseFilterFunctor* isIdAllowed) const {
+template <typename dist_t>
+class AlgorithmInterface {
+   public:
+    virtual void addPoint(const void *datapoint, labeltype label, bool replace_deleted = false) = 0;
+
+    virtual std::priority_queue<std::pair<dist_t, labeltype>> searchKnn(
+        const void *, size_t, BaseFilterFunctor *isIdAllowed = nullptr) const = 0;
+
+    // Return k nearest neighbor in the order of closer fist
+    virtual std::vector<std::pair<dist_t, labeltype>> searchKnnCloserFirst(
+        const void *query_data, size_t k, BaseFilterFunctor *isIdAllowed = nullptr) const;
+
+    virtual void saveIndex(const std::string &location) = 0;
+    virtual ~AlgorithmInterface() {
+    }
+};
+
+template <typename dist_t>
+std::vector<std::pair<dist_t, labeltype>> AlgorithmInterface<dist_t>::searchKnnCloserFirst(
+    const void *query_data, size_t k, BaseFilterFunctor *isIdAllowed) const {
     std::vector<std::pair<dist_t, labeltype>> result;
 
     // here searchKnn returns the result in the order of further first
@@ -221,8 +227,8 @@ AlgorithmInterface<dist_t>::searchKnnCloserFirst(const void* query_data, size_t 
 }
 }  // namespace hnswlib
 
-#include "space_l2.h"
-#include "space_ip.h"
-#include "stop_condition.h"
 #include "bruteforce.h"
 #include "hnswalg.h"
+#include "space_ip.h"
+#include "space_l2.h"
+#include "stop_condition.h"

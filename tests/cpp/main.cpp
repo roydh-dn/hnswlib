@@ -6,9 +6,9 @@ int main(int argc, char *argv[]) {
     argparse::ArgumentParser parser("sift_1b");
 
     parser.add_argument("-f", "--float")
-    .help("run sift 1b as float point interface")
-    .default_value(false)
-    .implicit_value(true);
+        .help("run sift 1b as float point interface")
+        .default_value(false)
+        .implicit_value(true);
 
     parser.parse_args(argc, argv);
 
